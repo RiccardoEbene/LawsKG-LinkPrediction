@@ -13,14 +13,14 @@ CONFIG = {
     "AUTH": ("", ""),
     
     # File Paths
-    "INPUT_LINKS": "output/NEW_pairs_nucleare_ranked.csv",
-    "EMBEDDING_NPY": "test/test_outputs/nucleare_2010_31/DELETE_embeddings_dict_2010_31.npy",
-    "SEARCH_RESULTS": "test/test_outputs/nucleare_2010_31/DELETE_results_nucleare.csv",
+    "INPUT_LINKS": "output/pairs_ozono_ranked_all.csv",
+    "EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/embeddings_dict_1993_549.npy",
+    "SEARCH_RESULTS": "test/test_outputs/ozono_1993_549/results_ozono.csv",
     
     # Experiment Parameters
-    "QUERY": "Normativa sul nucleare e sulla gestione dei rifiuti radioattivi",
-    "YEAR_FILTER": 1997,
-    "LAW_ID_TARGET": "2010|31",
+    "QUERY": "Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
+    "YEAR_FILTER": 1993,
+    "LAW_ID_TARGET": "1993|549",
     "GT_TOTAL": 35, # Ground truth total articles
     "K_RECALL": 50
 }
