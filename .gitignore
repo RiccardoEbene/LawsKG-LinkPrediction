@@ -3,3 +3,5 @@ output/
 debug/
 checkpoints/
 test/test_outputs/
+workspace.py
+save_old_emb.py
