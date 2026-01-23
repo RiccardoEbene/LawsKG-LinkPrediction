@@ -6,6 +6,7 @@ from scripts.embedding_compute import compute_and_save_embeddings
 from scripts.set_new_embeddings import update_embeddings_in_db
 from scripts.query_search import perform_vector_search
 from scripts.compute_metrics import print_metrics
+from scripts.clean_up import clean_up
 
 # --- Configuration ---
 CONFIG = {
@@ -13,20 +14,20 @@ CONFIG = {
     "AUTH": ("", ""),
     
     # File Paths
-    "INPUT_LINKS": "output/pairs_ozono_ranked_all.csv",
-    "EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/embeddings_dict_1993_549.npy",
-    "SEARCH_RESULTS": "test/test_outputs/ozono_1993_549/results_ozono.csv",
-    
+    "INPUT_LINKS": "output/all_pairs_ozono_ranked.csv",
+    "EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/new_embeddings_dict_1993_549_all.npy",
+    "SEARCH_RESULTS": "test/test_outputs/ozono_1993_549/results_ozono_all.csv",
+    "OLD_EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/old_embeddings_dict_1993_549.npy",
     # Experiment Parameters
     "QUERY": "Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
     "YEAR_FILTER": 1993,
     "LAW_ID_TARGET": "1993|549",
-    "GT_TOTAL": 35, # Ground truth total articles
+    "GT_TOTAL": 18, # Ground truth total articles
     "K_RECALL": 50
 }
 
 def main():
-    print(">>> STEP 1: Inserting New Links")
+    print("STEP 1: Inserting New Links")
     insert_new_links(
         new_links=CONFIG["INPUT_LINKS"], 
         uri=CONFIG["URI"], 
@@ -34,7 +35,7 @@ def main():
         wrong=False
     )
     
-    print("\n>>> STEP 2: Computing Embeddings")
+    print("\nSTEP 2: Computing Embeddings")
     compute_and_save_embeddings(
         input_edges_path=CONFIG["INPUT_LINKS"],
         output_npy_path=CONFIG["EMBEDDING_NPY"],
@@ -42,14 +43,14 @@ def main():
         auth=CONFIG["AUTH"]
     )
 
-    print("\n>>> STEP 3: Updating Graph with New Embeddings")
+    print("\nSTEP 3: Updating Graph with New Embeddings")
     update_embeddings_in_db(
         npy_path=CONFIG["EMBEDDING_NPY"],
         driver_uri=CONFIG["URI"],
         auth=CONFIG["AUTH"]
     )
 
-    print("\n>>> STEP 4: Performing Vector Search")
+    print("\nSTEP 4: Performing Vector Search")
     perform_vector_search(
         query_text=CONFIG["QUERY"],
         year=CONFIG["YEAR_FILTER"],
@@ -58,15 +59,22 @@ def main():
         auth=CONFIG["AUTH"]
     )
 
-    print("\n>>> STEP 5: Computing Metrics")
+    print("\nSTEP 5: Computing Metrics")
     print_metrics(
         results_csv=CONFIG["SEARCH_RESULTS"],
         law_id=CONFIG["LAW_ID_TARGET"],
         gt_count=CONFIG["GT_TOTAL"],
         k=CONFIG["K_RECALL"]
     )
+
+    print("\nSTEP 6: Deleting new link and restoring old embeddings")
+    clean_up(
+        old_emb=CONFIG["OLD_EMBEDDING_NPY"], 
+        driver_uri=CONFIG["URI"], 
+        auth=CONFIG["AUTH"]
+    )
     
-    print("\n>>> PIPELINE COMPLETE")
+    print("\nPIPELINE COMPLETE")
 
 if __name__ == "__main__":
     main()
