@@ -4,6 +4,7 @@ from neo4j import GraphDatabase
 import os
 
 def update_embeddings_in_db(npy_path, driver_uri, auth):
+    """Updates node embeddings in the Memgraph database from a .npy file."""
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
     input_embeddings = np.load(npy_path, allow_pickle=True).item()
