@@ -97,7 +97,17 @@ def inference(args):
             
     # Save Predictions
     test_edges_df['score'] = scores.cpu().numpy()
-    test_edges_df['score_prob'] = sigmoid(scores.detach()).cpu().numpy()
+
+    # Calculate mean and standard deviation
+    scores_mean = scores.mean()
+    scores_std = scores.std()
+
+    # Standardize the scores
+    z_scores = (scores - scores_mean) / (scores_std + 1e-8)
+
+    # Apply sigmoid to the Z-scores
+    test_edges_df['score_prob'] = torch.sigmoid(z_scores).cpu().numpy()
+
     if 'similarity' in test_edges_df.columns:
         test_edges_df['similarity'] = test_edges_df['similarity'] 
         
@@ -112,9 +122,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nodes_path', type=str, default='data/all_nodes_emb.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
-    parser.add_argument('--input_csv', type=str, default='data/inference_pairs_ozono_all.csv')
-    parser.add_argument('--output_csv', type=str, default='output/all_pairs_ozono_ranked.csv')
-    parser.add_argument('--model_path', type=str, default='checkpoints/model_emb_tuned.pth')
+    parser.add_argument('--input_csv', type=str, default='data/inference_pairs_ozono_train.csv')
+    parser.add_argument('--output_csv', type=str, default='output/pairs_ozono_ranked_full_train.csv')
+    parser.add_argument('--model_path', type=str, default='checkpoints/tuned_graphsage_full.pth')
     # parser.add_argument('--map_path', type=str, default='output/node_map.pkl')
     
     args = parser.parse_args()

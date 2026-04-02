@@ -34,9 +34,12 @@ class GraphSAGE(nn.Module):
         
         # Case 1: Mini-batch Inference (g is a list of blocks)
         if isinstance(g, list):
-            # In mini-batches, 'x' (input_features) is passed explicitly 
-            # by the inference loop to avoid loading all features to GPU.
-            h = x
+            # If no features are explicitly passed, look up the learned embeddings using the block's original node IDs
+            if x is None:
+                src_node_ids = g[0].srcdata[dgl.NID]
+                h = self.node_emb(src_node_ids)
+            else:
+                h = x
             
             # Layer 1: Apply to first block
             h = self.conv1(g[0], h)

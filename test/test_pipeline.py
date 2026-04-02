@@ -12,21 +12,24 @@ from scripts.clean_up import clean_up
 CONFIG = {
     "URI": "bolt://localhost:23034",
     "AUTH": ("", ""),
+
+    "USE_OLD_EMBEDDINGS": False, # Set to True to run the pipeline with old embeddings for comparison
     
     # File Paths
-    "INPUT_LINKS": "output/all_pairs_ozono_ranked.csv",
-    "EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/new_embeddings_dict_1993_549_all.npy",
-    "SEARCH_RESULTS": "test/test_outputs/ozono_1993_549/results_ozono_all.csv",
-    "OLD_EMBEDDING_NPY": "test/test_outputs/ozono_1993_549/old_embeddings_dict_1993_549.npy",
+    "INPUT_LINKS": "output/pairs_ozono_ranked_full_train.csv",
+    "EMBEDDING_NPY": "test/test_outputs/ozono/new_embeddings_dict_1993_549_train.npy",
+    "SEARCH_RESULTS": "test/test_outputs/ozono/new_results_ozono_train.csv",
+    "OLD_SEARCH_RESULTS": "test/test_outputs/ozono/old_results_ozono.csv",
+    "OLD_EMBEDDING_NPY": "test/test_outputs/ozono/old_embeddings_1993_549.npy",
     # Experiment Parameters
     "QUERY": "Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
     "YEAR_FILTER": 1993,
     "LAW_ID_TARGET": "1993|549",
-    "GT_TOTAL": 18, # Ground truth total articles
+    "GT_TOTAL": 17, # Ground truth total articles
     "K_RECALL": 50
 }
 
-def main():
+def run_new_embeddings_pipeline():
     print("STEP 1: Inserting New Links")
     insert_new_links(
         new_links=CONFIG["INPUT_LINKS"], 
@@ -73,8 +76,43 @@ def main():
         driver_uri=CONFIG["URI"], 
         auth=CONFIG["AUTH"]
     )
-    
+
     print("\nPIPELINE COMPLETE")
 
+
+def run_old_embeddings_pipeline():
+    print("STEP 1: Restoring Old Embeddings in Graph")
+    update_embeddings_in_db(
+        npy_path=CONFIG["OLD_EMBEDDING_NPY"],
+        driver_uri=CONFIG["URI"],
+        auth=CONFIG["AUTH"]
+    )
+
+    print("\nSTEP 2: Performing Vector Search")
+    perform_vector_search(
+        query_text=CONFIG["QUERY"],
+        year=CONFIG["YEAR_FILTER"],
+        output_csv_path=CONFIG["OLD_SEARCH_RESULTS"],
+        driver_uri=CONFIG["URI"],
+        auth=CONFIG["AUTH"]
+    )
+
+    print("\nSTEP 3: Computing Metrics")
+    print_metrics(
+        results_csv=CONFIG["OLD_SEARCH_RESULTS"],
+        law_id=CONFIG["LAW_ID_TARGET"],
+        gt_count=CONFIG["GT_TOTAL"],
+        k=CONFIG["K_RECALL"]
+    )
+
+    print("\nOLD EMBEDDINGS PIPELINE COMPLETE")
+
+
+def main(use_old_embeddings):
+    if use_old_embeddings:
+        run_old_embeddings_pipeline()
+    else:
+        run_new_embeddings_pipeline()
+
 if __name__ == "__main__":
-    main()
+    main(use_old_embeddings=CONFIG["USE_OLD_EMBEDDINGS"])

@@ -62,4 +62,13 @@ def print_metrics(results_csv, law_id, gt_count, k=50, recall_target=0.75):
     
     print(f"Recall@{k}: {recall:.1%}")     
     print(f"Depth for {recall_target:.0%}: {depth_full}")    
-    print(f"First Hit: {best}")               
+    print(f"First Hit: {best}")       
+
+if __name__ == "__main__":
+    print_metrics(
+        results_csv="test/test_outputs/sostanze_2008_145/all_old_results_sostanze.csv",
+        law_id="2008|145",
+        gt_count=14,
+        k=100,
+        recall_target=0.75
+    )        

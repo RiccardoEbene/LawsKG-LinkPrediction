@@ -1,8 +1,8 @@
 import argparse
 import torch
 import itertools
-import os
-import time
+from torch.utils.tensorboard import SummaryWriter
+from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 from src.models import GraphSAGE, DotPredictor, NodeMLP
 from src.dataset import load_base_graph, load_train_test_split
 from src.utils import compute_loss, compute_auc, compute_recall, compute_f1, save_checkpoint, get_device, set_seed
@@ -12,6 +12,8 @@ USE_PRETRAINED = True
 def main(args):
     # Set seeds early so data loading / model init are deterministic
     set_seed(args.seed)
+
+    writer = SummaryWriter(log_dir=args.log_dir)
 
     device = get_device()
     print(f"Using device: {device}")
@@ -55,16 +57,23 @@ def main(args):
                     num_nodes=g.num_nodes(), 
                     in_feats=args.input_dim, 
                     h_feats=args.hidden_dim, 
-                    pretrained_emb=node_features 
+                    pretrained_emb=node_features,
+                    aggregator_type=args.aggregator
                 ).to(device)
         
     pred = DotPredictor().to(device)
 
     optimizer = torch.optim.Adam(
-        itertools.chain(model.parameters(), pred.parameters()), lr=args.lr
+        itertools.chain(model.parameters(), pred.parameters()), lr=args.lr, weight_decay=args.weight_decay
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+    warmup_epochs = 2
+    scheduler1 = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_epochs)
+    
+    # 2. Cosine: Parte da lr e scende a 0 per i restanti epoch
+    scheduler2 = CosineAnnealingLR(optimizer, T_max=args.epochs - warmup_epochs)
 
+    # 3. Sequential: Li unisce. 'milestones' indica quando passare al successivo
+    scheduler = SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_epochs])
     # 4. Training Loop
     best_f1 = 0
     
@@ -83,6 +92,10 @@ def main(args):
         optimizer.step()
         scheduler.step()
 
+        # Log Training Loss to TensorBoard 
+        writer.add_scalar('Train/Loss', loss.item(), e)
+        writer.add_scalar('Train/LR', scheduler.get_last_lr()[0], e)
+
         if e % args.eval_every == 0:
             model.eval()
             with torch.no_grad():
@@ -93,26 +106,36 @@ def main(args):
                 
                 print(f"Epoch {e} | Loss: {loss.item():.4f} | Test F1: {f1:.4f} | Test AUC: {auc:.4f} | Best Thresh: {best_thresh:.4f}")
                 
+                # Log Evaluation Metrics to TensorBoard
+                writer.add_scalar('Test/F1', f1, e)
+                writer.add_scalar('Test/AUC', auc, e)
+                writer.add_scalar('Test/Best_Threshold', best_thresh, e)
+
                 if f1 > best_f1:
                     best_f1 = f1
-                    # save_checkpoint(model, optimizer, vars(args), node_map, args.model_save_path)
-                    # print(f"  -> Model saved to {args.model_save_path}")
+                    save_checkpoint(model, optimizer, vars(args), node_map, args.model_save_path)
+                    print(f"  -> Model saved to {args.model_save_path}")
+
+    writer.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Paths
-    parser.add_argument('--nodes_path', type=str, default='data/nodes.parquet')
+    parser.add_argument('--nodes_path', type=str, default='data/train_nodes.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
     parser.add_argument('--label_path', type=str, default='data/in_notes_set_labeled.csv')
-    parser.add_argument('--model_save_path', type=str, default='checkpoints/model_no_emb.pth')
+    parser.add_argument('--model_save_path', type=str, default='checkpoints/graphsage_full.pth')
     # parser.add_argument('--map_save_path', type=str, default='checkpoints/node_map.pkl')
     
     # Hyperparams
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--input_dim', type=int, default=1024)
     parser.add_argument('--hidden_dim', type=int, default=1024)
     parser.add_argument('--lr', type=float, default=1e-3)
-    parser.add_argument('--eval_every', type=int, default=10)
+    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--aggregator', type=str, default='mean')
+    parser.add_argument('--eval_every', type=int, default=5)
+    parser.add_argument('--log_dir', type=str, default='logs/model_1_run')
     parser.add_argument('--ablation', action='store_true', help="Use NodeMLP instead of GraphSAGE")
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
 

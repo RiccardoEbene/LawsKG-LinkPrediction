@@ -62,8 +62,8 @@ if __name__ == "__main__":
     URI = "bolt://localhost:23034"
     YEAR = 1993
     LAW = "1993|549"
-    OUTPUT_CSV = f"data/inference_pairs_ozono_all.csv"
-    nodes_csv = f"data/all_nodes.csv"
+    OUTPUT_CSV = f"data/inference_pairs_ozono_train.csv"
+    nodes_csv = f"data/train_nodes.csv"
 
     df1 = get_unit_from_law(LAW, URI)
     df2 = get_nodes_after_year(YEAR, URI)

@@ -3,15 +3,17 @@ import pandas as pd
 import dgl
 from neo4j import GraphDatabase
 
-def insert_new_links(new_links: str, uri: str, k: int = 5000, wrong: bool = False):
+def insert_new_links(new_links: str, uri: str, k: int = 10000, wrong: bool = False):
     driver = GraphDatabase.driver(uri, auth=("", ""))
+    seed = 42
 
     new_links_df = pd.read_csv(new_links)[['node_1', 'node_2']]
     if not wrong:
-        links = new_links_df.head(k)
+        # tune this part
+        links = new_links_df.head(k*10).sample(n=k, random_state=seed).reset_index(drop=True)
         rel_type = "RELATED"
     else:
-        links = new_links_df.tail(k*10).sample(n=k).reset_index(drop=True)
+        links = new_links_df.tail(k*10).sample(n=k, random_state=seed).reset_index(drop=True)
         rel_type = "WRONG_RELATED"
 
     print(f"Inserting {len(links)} new links of type {rel_type}...")
