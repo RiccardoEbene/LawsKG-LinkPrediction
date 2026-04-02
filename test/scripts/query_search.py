@@ -73,4 +73,13 @@ def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth):
 
     print(f"Saved {len(df)} results to {output_csv_path}")
 
+if __name__ == "__main__":
+    perform_vector_search(
+        query_text="Normativa per il trattamento delle sostanze chimiche (regolamento REACH).",
+        year=1997,
+        output_csv_path="test/test_outputs/sostanze_2008_145/all_old_results_sostanze.csv",
+        driver_uri="bolt://localhost:23034",
+        auth=("", "")
+    )
+
     

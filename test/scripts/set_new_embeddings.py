@@ -31,3 +31,10 @@ def update_embeddings_in_db(npy_path, driver_uri, auth):
 
     print("Update complete.")
     driver.close()
+
+if __name__ == "__main__":
+    update_embeddings_in_db(
+        npy_path="test/test_outputs/ozono_1993_549/all_old_embedding_dict.npy",
+        driver_uri="bolt://localhost:23034",
+        auth=("", "")
+    )

@@ -3,5 +3,11 @@ output/
 debug/
 checkpoints/
 test/test_outputs/
+logs/
 workspace.py
 save_old_emb.py
+.env
+
+# Python cache
+*.py[cod]
+*$py.class

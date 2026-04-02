@@ -1,0 +1,300 @@
+.
+├── checkpoints
+│   ├── graphsage_batch.pth
+│   ├── graphsage_full.pth
+│   ├── model_emb_tuned_all_nodes.pth
+│   ├── model_no_emb.pth
+│   ├── OLDmodel_emb_tuned.pth
+│   └── tuned_graphsage_full.pth
+├── data
+│   ├── all_nodes.csv
+│   ├── all_nodes_emb.parquet
+│   ├── edges.csv
+│   ├── inference_pairs_combustibili.csv
+│   ├── inference_pairs_combustibili_train.csv
+│   ├── inference_pairs_lavoro.csv
+│   ├── inference_pairs_lavoro_train.csv
+│   ├── inference_pairs_ozono.csv
+│   ├── inference_pairs_ozono_train.csv
+│   ├── inference_pairs_sostanze.csv
+│   ├── inference_pairs_sostanze_train.csv
+│   ├── in_notes_set_labeled_3.csv
+│   ├── in_notes_set_labeled.csv
+│   ├── in_notes_set_labeled.csv.bak
+│   ├── missing_lawunit_ids.txt
+│   ├── random_negatives_samples.csv
+│   ├── sim_greater_95_couples.csv
+│   ├── sim_lower_0.95_couples.csv
+│   ├── sim_lower_0.95_couples_filtered.csv
+│   ├── train_nodes.csv
+│   ├── train_nodes.parquet
+│   ├── two_hop_pairs.csv
+│   └── two_hop_pairs_no_overlap.csv
+├── debug
+│   ├── empty_lavoro_2015_150_text.txt
+│   ├── new_combustibili_text.txt
+│   ├── new_lavoro_2015_150_text.txt
+│   ├── new_nucleare_text.txt
+│   ├── new_ozono_text.txt
+│   ├── new_pesticidi_text.txt
+│   ├── new_sostanze_text.txt
+│   ├── old_combustibili_2017_51_text.txt
+│   ├── old_sostanze_text.txt
+│   ├── wrong_combustibili_2017_51_text.txt
+│   ├── wrong_lavoro_2015_150_text.txt
+│   └── wrong_sostanze_text.txt
+├── logs
+│   ├── all_edges_batch_run
+│   │   └── events.out.tfevents.1774117246.genex.105609.0
+│   ├── hyperparam_search
+│   │   ├── run_0_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118418.genex.131952.0
+│   │   ├── run_10_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118639.genex.131952.10
+│   │   ├── run_11_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118656.genex.131952.11
+│   │   ├── run_12_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118701.genex.131952.12
+│   │   ├── run_13_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118713.genex.131952.13
+│   │   ├── run_14_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118721.genex.131952.14
+│   │   ├── run_15_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118744.genex.131952.15
+│   │   ├── run_16_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118772.genex.131952.16
+│   │   ├── run_17_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118788.genex.131952.17
+│   │   ├── run_18_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118834.genex.131952.18
+│   │   ├── run_19_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118847.genex.131952.19
+│   │   ├── run_1_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118444.genex.131952.1
+│   │   ├── run_20_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118854.genex.131952.20
+│   │   ├── run_21_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774118877.genex.131952.21
+│   │   ├── run_22_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774118908.genex.131952.22
+│   │   ├── run_23_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774118924.genex.131952.23
+│   │   ├── run_24_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118970.genex.131952.24
+│   │   ├── run_25_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118982.genex.131952.25
+│   │   ├── run_26_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774118989.genex.131952.26
+│   │   ├── run_27_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119012.genex.131952.27
+│   │   ├── run_28_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119040.genex.131952.28
+│   │   ├── run_29_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119057.genex.131952.29
+│   │   ├── run_2_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118452.genex.131952.2
+│   │   ├── run_30_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774119103.genex.131952.30
+│   │   ├── run_31_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774119114.genex.131952.31
+│   │   ├── run_32_lr0.0005_hd512
+│   │   │   └── events.out.tfevents.1774119122.genex.131952.32
+│   │   ├── run_33_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119145.genex.131952.33
+│   │   ├── run_34_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119173.genex.131952.34
+│   │   ├── run_35_lr0.0005_hd1024
+│   │   │   └── events.out.tfevents.1774119189.genex.131952.35
+│   │   ├── run_36_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119235.genex.131952.36
+│   │   ├── run_37_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119246.genex.131952.37
+│   │   ├── run_38_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119254.genex.131952.38
+│   │   ├── run_39_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119277.genex.131952.39
+│   │   ├── run_3_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118474.genex.131952.3
+│   │   ├── run_40_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119305.genex.131952.40
+│   │   ├── run_41_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119327.genex.131952.41
+│   │   ├── run_42_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119373.genex.131952.42
+│   │   ├── run_43_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119384.genex.131952.43
+│   │   ├── run_44_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119392.genex.131952.44
+│   │   ├── run_45_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119415.genex.131952.45
+│   │   ├── run_46_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119443.genex.131952.46
+│   │   ├── run_47_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119459.genex.131952.47
+│   │   ├── run_48_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119505.genex.131952.48
+│   │   ├── run_49_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119517.genex.131952.49
+│   │   ├── run_4_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118505.genex.131952.4
+│   │   ├── run_50_lr0.0001_hd512
+│   │   │   └── events.out.tfevents.1774119524.genex.131952.50
+│   │   ├── run_51_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119547.genex.131952.51
+│   │   ├── run_52_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119575.genex.131952.52
+│   │   ├── run_53_lr0.0001_hd1024
+│   │   │   └── events.out.tfevents.1774119592.genex.131952.53
+│   │   ├── run_5_lr0.001_hd1024
+│   │   │   └── events.out.tfevents.1774118523.genex.131952.5
+│   │   ├── run_6_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118569.genex.131952.6
+│   │   ├── run_7_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118581.genex.131952.7
+│   │   ├── run_8_lr0.001_hd512
+│   │   │   └── events.out.tfevents.1774118588.genex.131952.8
+│   │   └── run_9_lr0.001_hd1024
+│   │       └── events.out.tfevents.1774118611.genex.131952.9
+│   ├── model_1_run
+│   │   ├── events.out.tfevents.1774116328.genex.82669.0
+│   │   └── events.out.tfevents.1774117099.genex.97584.0
+│   └── tuning_run
+│       ├── events.out.tfevents.1769360698.genex.3864780.0
+│       └── events.out.tfevents.1769361313.genex.3875562.0
+├── main.py
+├── output
+│   ├── new_llm_judge_output_combustibili.txt
+│   ├── pairs_combustibili_ranked_batch.csv
+│   ├── pairs_combustibili_ranked_full.csv
+│   ├── pairs_combustibili_ranked_full_train.csv
+│   ├── pairs_lavoro_ranked_batch.csv
+│   ├── pairs_lavoro_ranked_batch_train.csv
+│   ├── pairs_lavoro_ranked_full.csv
+│   ├── pairs_lavoro_ranked_full_train.csv
+│   ├── pairs_ozono_ranked_batch.csv
+│   ├── pairs_ozono_ranked_full.csv
+│   ├── pairs_ozono_ranked_full_train.csv
+│   ├── pairs_sostanze_ranked_batch.csv
+│   ├── pairs_sostanze_ranked_full.csv
+│   ├── pairs_sostanze_ranked_full_train.csv
+│   ├── predictions_emb_tuned.csv
+│   ├── prova_inference_out.csv
+│   └── sim_lower_0.95_predictions.csv
+├── __pycache__
+│   ├── main.cpython-313.pyc
+│   ├── memgraph_util.cpython-311.pyc
+│   └── memgraph_util.cpython-313.pyc
+├── pykeen
+│   ├── data
+│   │   ├── testingtriples_in_notes.csv
+│   │   └── trainingtriples_pykeen.csv
+│   ├── output
+│   │   ├── inference_results
+│   │   │   ├── inference_results_combustibili.csv
+│   │   │   └── score_distribution.png
+│   │   ├── saved_models
+│   │   │   └── rotate_model
+│   │   │       ├── metadata.json
+│   │   │       ├── results.json
+│   │   │       ├── trained_model.pkl
+│   │   │       └── training_triples
+│   │   │           ├── base.pth
+│   │   │           ├── entity_to_id.tsv.gz
+│   │   │           ├── numeric_triples.tsv.gz
+│   │   │           └── relation_to_id.tsv.gz
+│   │   └── test_output
+│   │       ├── new_emb_combustibili_pykeen.npy
+│   │       └── new_results_combustibili_pykeen.csv
+│   └── src
+│       ├── inference.py
+│       └── train.py
+├── requirements.txt
+├── save_old_emb.py
+├── src
+│   ├── batch_training.py
+│   ├── build_inference_dataset.py
+│   ├── build_label_dataset.py
+│   ├── checks.py
+│   ├── dataset.py
+│   ├── inference.py
+│   ├── __init__.py
+│   ├── models.py
+│   ├── training.py
+│   ├── tuning.py
+│   └── utils.py
+├── structure.txt
+├── test
+│   ├── __init__.py
+│   ├── llm_test.py
+│   ├── scripts
+│   │   ├── clean_up.py
+│   │   ├── compute_metrics.py
+│   │   ├── embedding_compute.py
+│   │   ├── __init__.py
+│   │   ├── insert_new_links.py
+│   │   ├── query_search.py
+│   │   └── set_new_embeddings.py
+│   ├── test_outputs
+│   │   ├── combustibili
+│   │   │   ├── batch_embeddings_dict_2017_51.npy
+│   │   │   ├── batch_llm_judge_output_combustibili.txt
+│   │   │   ├── batch_results_combustibili.csv
+│   │   │   ├── empty_embeddings_dict_2017_51.npy
+│   │   │   ├── empty_results_combustibili.csv
+│   │   │   ├── new_embeddings_dict_2017_51.npy
+│   │   │   ├── new_embeddings_dict_2017_51_train.npy
+│   │   │   ├── new_llm_judge_output_combustibili.txt
+│   │   │   ├── new_results_combustibili.csv
+│   │   │   ├── new_results_combustibili_train.csv
+│   │   │   ├── old_embeddings_2017_51.npy
+│   │   │   ├── old_embeddings_dict_2017_51.npy
+│   │   │   ├── old_results_combustibili.csv
+│   │   │   ├── wrong_embeddings_dict_2017_51.npy
+│   │   │   └── wrong_results_combustibili.csv
+│   │   ├── memgraph_util.py
+│   │   ├── nucleare
+│   │   │   ├── empty_embeddings_dict_2010_31.npy
+│   │   │   ├── empty_results_nucleare.csv
+│   │   │   ├── new_embeddings_dict_2010_31.npy
+│   │   │   ├── new_results_nucleare.csv
+│   │   │   ├── old_embeddings_dict_2010_31.npy
+│   │   │   ├── old_results_nucleare.csv
+│   │   │   ├── wrong_embeddings_dict_2010_31.npy
+│   │   │   └── wrong_results_nucleare.csv
+│   │   ├── ozono
+│   │   │   ├── batch_embeddings_dict_1993_549.npy
+│   │   │   ├── batch_results_ozono.csv
+│   │   │   ├── empty_embeddings_dict_1993_549.npy
+│   │   │   ├── empty_results_ozono.csv
+│   │   │   ├── new_embeddings_dict_1993_549.npy
+│   │   │   ├── new_embeddings_dict_1993_549_train.npy
+│   │   │   ├── new_results_ozono.csv
+│   │   │   ├── new_results_ozono_train.csv
+│   │   │   ├── old_embeddings_1993_549.npy
+│   │   │   ├── old_embeddings_dict_1993_549.npy
+│   │   │   ├── old_results_ozono.csv
+│   │   │   ├── wrong_embeddings_dict_1993_549.npy
+│   │   │   └── wrong_results_ozono.csv
+│   │   ├── pesticidi
+│   │   │   ├── new_embeddings_dict_2012_150.npy
+│   │   │   ├── new_results_pesticidi.csv
+│   │   │   ├── old_embeddings_dict_2012_150.npy
+│   │   │   └── old_results_pesticidi.csv
+│   │   └── sostanze
+│   │       ├── batch_embeddings_dict_2008_145.npy
+│   │       ├── batch_results_sostanze.csv
+│   │       ├── empty_embeddings_dict_2008_145.npy
+│   │       ├── empty_results_sostanze.csv
+│   │       ├── new_embeddings_dict_2008_145.npy
+│   │       ├── new_embeddings_dict_2008_145_train.npy
+│   │       ├── new_results_sostanze.csv
+│   │       ├── new_results_sostanze_train.csv
+│   │       ├── old_embeddings_2008_145.npy
+│   │       ├── old_results_sostanze.csv
+│   │       ├── wrong_embeddings_dict_2008_145.npy
+│   │       └── wrong_results_sostanze.csv
+│   ├── test_pipeline.py
+│   └── test_utils.py
+└── workspace.py
+
+82 directories, 215 files
