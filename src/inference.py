@@ -113,7 +113,7 @@ def inference(args):
         
     test_edges_df.sort_values(by='score', ascending=False, inplace=True)
     
-    test_edges_df.to_csv(args.output_csv, index=False)
+    # test_edges_df.to_csv(args.output_csv, index=False)
     print(f"Predictions saved to {args.output_csv}")
     print(test_edges_df.head())
 
@@ -122,8 +122,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nodes_path', type=str, default='data/all_nodes_emb.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
-    parser.add_argument('--input_csv', type=str, default='data/inference_pairs_ozono_train.csv')
-    parser.add_argument('--output_csv', type=str, default='output/pairs_ozono_ranked_full_train.csv')
+    parser.add_argument('--input_csv', type=str, default='data/inference_test1/inference_pairs_ozono_train.csv')
+    parser.add_argument('--output_csv', type=str, default='output/inference_test1/pairs_ozono_ranked_full_train.csv')
     parser.add_argument('--model_path', type=str, default='checkpoints/tuned_graphsage_full.pth')
     # parser.add_argument('--map_path', type=str, default='output/node_map.pkl')
     
