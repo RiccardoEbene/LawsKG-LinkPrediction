@@ -3,11 +3,11 @@ import numpy as np
 from neo4j import GraphDatabase
 import os
 
-def update_embeddings_in_db(npy_path, driver_uri, auth):
+def update_embeddings_in_db(embeddings_to_save, driver_uri, auth):
     """Updates node embeddings in the Memgraph database from a .npy file."""
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
-    input_embeddings = np.load(npy_path, allow_pickle=True).item()
+    input_embeddings = embeddings_to_save
 
     for id in input_embeddings.keys():
         id = str(id)
@@ -26,7 +26,7 @@ def update_embeddings_in_db(npy_path, driver_uri, auth):
         driver.execute_query("""
         MATCH (n:LawUnit)
         WHERE n.id = $node_id
-        SET n.embedding = $embedding
+        SET n.new_embedding = $embedding
         """, node_id=id, embedding=embedding)
 
     print("Update complete.")

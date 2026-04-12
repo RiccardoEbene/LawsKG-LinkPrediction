@@ -8,7 +8,7 @@ def get_nodes_after_year(year: int, uri: str):
     driver = GraphDatabase.driver(uri, auth=("", ""))
     
     query = """
-        MATCH (l:Law)-[r]->(a:LawUnit{_flag_remove:false})
+        MATCH (l:NationalLaw)-[r]->(a:LawUnit{_flag_remove:false})
         WHERE (type(r) = "HAS_ARTICLE" OR type(r) = "HAS_ATTACHMENT") AND
             l.publicationDate > localDateTime({year:$year, month:1, day:1}) 
         RETURN DISTINCT a.id as node_id
@@ -51,7 +51,7 @@ def get_nodes_between_years(start_year: int, end_year: int, uri: str):
     driver = GraphDatabase.driver(uri, auth=("", ""))
 
     query = """
-        MATCH (l:Law)-[r]->(a:LawUnit {_flag_remove:false})
+        MATCH (l:NationalLaw)-[r]->(a:LawUnit {_flag_remove:false})
         WHERE (type(r) = "HAS_ARTICLE" OR type(r) = "HAS_ATTACHMENT") AND
             l.publicationDate >= localDateTime({year:$start_year, month:1, day:1}) AND
             l.publicationDate <= localDateTime({year:$end_year, month:12, day:31})
@@ -83,37 +83,19 @@ def build_inference_set(df1, df2):
     return pairs_df
 
 
-def has_existing_connection(
-    input_pairs_df: pd.DataFrame,
-    uri: str = "bolt://localhost:23034",
-    auth= ("", ""),
-):
-    pair_frame = input_pairs_df[["node_1", "node_2"]].astype(str)
+def has_existing_connection(main_df: pd.DataFrame, exclude_csv: str = "data/connected_nodes.csv") -> pd.DataFrame:
+    # Read the CSV containing the couples to exclude
+    exclude_df = pd.read_csv(exclude_csv)
+    
+    # Perform a left merge to identify which rows from main_df exist in exclude_df
+    merged_df = main_df.merge(exclude_df, on=['node_1', 'node_2'], how='left', indicator=True)
 
-    driver = GraphDatabase.driver(uri, auth=auth)
-    with driver.session() as session:
-        result = session.run(
-            """
-            UNWIND $pairs AS p
-            MATCH (a:LawUnit {id: p.node_1})
-            MATCH (b:LawUnit {id: p.node_2})
-            MATCH (a)-[r]-(b)
-            RETURN DISTINCT p.node_1 AS node_1, p.node_2 AS node_2
-            """,
-            pairs=pair_frame.to_dict("records"),
-        )
-        connected_pairs = {
-            (str(record["node_1"]), str(record["node_2"]))
-            for record in result
-        }
+    filtered_df = merged_df[merged_df['_merge'] == 'left_only'].drop(columns='_merge')
+    dropped_count = len(main_df) - len(filtered_df)
+    print(f"Dropped {dropped_count} couples already present in {exclude_csv}.")
 
-    driver.close()
-
-    input_pairs = input_pairs_df[["node_1", "node_2"]].astype(str)
-    mask_connected = pd.MultiIndex.from_frame(input_pairs).isin(list(connected_pairs))
-
-    return input_pairs_df.loc[~mask_connected].copy()
-
+    # Keep only the rows that are uniquely in the left dataframe (main_df) and drop the indicator column
+    return filtered_df
 
 def build_inference_dataset_from_law(
         uri: str, 
@@ -158,7 +140,7 @@ def build_inference_dataset_between_years(
         print(f"Inference pairs saved to {output_csv}")
         return
 
-    pairs_df = has_existing_connection(pairs_df, uri=uri)
+    pairs_df = has_existing_connection(pairs_df)
 
     nodes_df = pd.read_csv(nodes_csv, dtype={"node_id": str})
     pairs_df = delete_invalid_couples(pairs_df, nodes_df)
@@ -191,10 +173,13 @@ def build_inference_dataset_from_topk(
 
     print("Inference dataset built, deleting invalid couples...")
     # Filter out pairs that already have a connection in the graph
-    # inference_pairs_df = has_existing_connection(inference_pairs_df, uri=uri)
+    inference_pairs_df = has_existing_connection(inference_pairs_df)
 
     # Filter out pairs that include unknown nodes
     inference_pairs_df = delete_invalid_couples(inference_pairs_df, nodes_df)
+
+    # shuffle
+    inference_pairs_df = inference_pairs_df.sample(frac=1).reset_index(drop=True)
 
     inference_pairs_df.to_csv(output_csv, index=False)
 
@@ -204,10 +189,9 @@ def build_inference_dataset_from_topk(
 if __name__ == "__main__":
     URI = "bolt://localhost:23034"
     YEAR = 2005
-    LAW = "2017|51"
+    # LAW = "2008|145"
     OLD_CLOSEST = f"test/test_outputs/combustibili/old_results_combustibili.csv"
     NODES_CSV = f"data/all_nodes.csv"
     OUTPUT_CSV = f"data/inference_test2/inference_pairs_combustibili_2.csv"
 
     build_inference_dataset_from_topk(URI, YEAR, OLD_CLOSEST, OUTPUT_CSV, NODES_CSV, k=100)
- 

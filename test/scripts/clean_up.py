@@ -3,7 +3,7 @@ import numpy as np
 from neo4j import GraphDatabase
 from scripts.set_new_embeddings import update_embeddings_in_db
 
-def clean_up(old_emb: str, driver_uri: str, auth: tuple):
+def clean_up(updated_nodes: list, driver_uri: str, auth: tuple):
     """Deletes the newly inserted links and restores old embeddings."""
     driver = GraphDatabase.driver(driver_uri, auth=auth)
     
@@ -18,12 +18,14 @@ def clean_up(old_emb: str, driver_uri: str, auth: tuple):
     
     print("Deleted newly inserted links.")
     
-    # Restore old embeddings
-    update_embeddings_in_db(
-        npy_path=old_emb,
-        driver_uri=driver_uri,
-        auth=auth
-    )
+    restore_query = """
+        UNWIND $updated_nodes AS node_id
+        MATCH (n:LawUnit {id: node_id})
+        SET n.new_embedding = n.embedding
+    """
+    
+    with driver.session() as session:
+        session.run(restore_query, updated_nodes=updated_nodes)
     
     print("Restored old embeddings.")
     
