@@ -39,21 +39,26 @@ def compute_embedding(input_text, model_name='intfloat/multilingual-e5-large-ins
     
     return embeddings.tolist()[0]
 
-def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth):
+def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth, use_old_embeddings=False):
     # Compute embedding for the query
     embedding = compute_embedding(query_text, device='cuda')
     
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
+    if use_old_embeddings:
+        index = "NationalArticleEmbedding"
+    else:
+        index = "NationalArticleNewEmbedding"
+
     # Perform vector search
     result, _, _ = driver.execute_query("""
             WITH 500 as k
-            CALL vector_search.search('UnitEmbedding', k, $embedding) 
+            CALL vector_search.search($index, k, $embedding) 
             YIELD node, similarity
             MATCH (l:Law)-[:HAS_ARTICLE]->(node)
             WHERE l.publicationDate > localDateTime({year:$year, month:1, day:1}) 
             RETURN node.id AS id, node.title as title, similarity
-            """, embedding=embedding, year=year)
+            """, index=index, embedding=embedding, year=year)
 
     # Save data to csv
     data = [
@@ -75,9 +80,10 @@ def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth):
 
 if __name__ == "__main__":
     perform_vector_search(
-        query_text="Normativa per il trattamento delle sostanze chimiche (regolamento REACH).",
-        year=1997,
-        output_csv_path="test/test_outputs/sostanze_2008_145/all_old_results_sostanze.csv",
+        query_text="Normativa sui combustibili ad uso trazione, uso civile, industriale e marittimo.",
+        year=2005,
+        output_csv_path="test/test_outputs/combustibili/prova_old_results_combustibili.csv",
+        use_old_embeddings=True,
         driver_uri="bolt://localhost:23034",
         auth=("", "")
     )

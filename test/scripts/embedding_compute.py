@@ -60,16 +60,21 @@ def average_pool(last_hidden_states: Tensor,
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
-def compute_and_save_embeddings(input_edges_path, output_npy_path, driver_uri, auth):
+def compute_and_save_embeddings(input_edges_path, n_inserted_links, driver_uri, auth):
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
     input_edges = input_edges_path
 
     df = pd.read_csv(input_edges)
 
-    nodes_1 = set(df['node_1'].tolist())
+    inserted_links = df[:n_inserted_links]
 
-    # Embedding for new nodes
+    nodes_1 = set(inserted_links['node_1'].tolist())
+    nodes_2 = set(inserted_links['node_2'].tolist())
+
+    node_ids = list(nodes_1.union(nodes_2))
+
+    # Re-compute embeddings for the new nodes (both node_1 and node_2)
     df = driver.execute_query("""
     MATCH (a:LawUnit)<-[r1]-(l:NationalLaw)
     WHERE a.id in $node_ids
@@ -83,7 +88,7 @@ def compute_and_save_embeddings(input_edges_path, output_npy_path, driver_uri, a
         a.title AS Title, a.allTopics AS ArtTopics,
         REDUCE(concatenated = "", topic IN l.mainTopic | concatenated + CASE concatenated WHEN "" THEN "" ELSE ", " END + topic) AS TopicLaw,
         REDUCE(concatenated = "", topic IN CitTopics | concatenated + CASE concatenated WHEN "" THEN "" ELSE ", " END + topic) AS CitTopics
-    """, node_ids=list(nodes_1))
+    """, node_ids=node_ids)
 
     df = pd.DataFrame(df[0], columns=df[-1]).fillna('')
 
@@ -122,7 +127,9 @@ def compute_and_save_embeddings(input_edges_path, output_npy_path, driver_uri, a
             new_embeddings[id] = embedding
 
         # Save new embeddings to a file
-        np.save(output_npy_path, new_embeddings)
+        # np.save(output_npy_path, new_embeddings)
+
+        return node_ids, new_embeddings
 
 
 def debug_old_embedding(input_edges_path, driver_uri, auth):
