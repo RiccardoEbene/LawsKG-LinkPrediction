@@ -28,9 +28,14 @@ def call_llm_judge(user_prompt, deployment_name):
             {
                 "role": "system",
                 "content": (
-                    "You are an expert evaluator. Determine whether the provided article is relevant to the topic. "
-                    "Focus on the article text and the topic itself. "
-                    "Reply ONLY with 'Yes' if they are a good match, or 'No' if they are not."
+                    "Sei un esperto giurista ed analista di testi legislativi italiani. "
+                    "Il tuo compito è valutare se l'articolo proposto è attinente al topic indicato. "
+                    "Contesto importante: l'articolo è stato selezionato tramite collegamenti impliciti "
+                    "(nascosti) basati su affinità semantica o logica. "
+                    "\n\nCriteri di valutazione:\n"
+                    "- Rispondi 'Sì' non solo per corrispondenze letterali, ma anche se l'articolo "
+                    "riguarda principi correlati, ambiti affini o fornisce contesto utile al topic.\n"
+                    "- Rispondi ESCLUSIVAMENTE con la parola 'Sì' o 'No'."
                 ),
             },
             {
@@ -128,8 +133,8 @@ def run_evaluation(
 
 if __name__ == "__main__":
     run_evaluation(
-        input_file="test/test_outputs/combustibili/new_results_combustibili.csv",
-        output_file="test/test_outputs/combustibili/llm_judge_output_combustibili.txt",
-        topic="Normativa sui combustibili ad uso trazione, uso civile, industriale e marittimo.",
-        k=1,
+        input_file="output/llm_judge/removed_articles_ozono.csv",
+        output_file="output/llm_judge/removed_llm_judge_ozono.txt",
+        topic="Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
+        k=10,
     )

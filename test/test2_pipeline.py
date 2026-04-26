@@ -2,7 +2,7 @@ import os
 import time
 
 from scripts.insert_new_links import insert_new_links
-from scripts.embedding_compute import compute_and_save_embeddings
+from scripts.embedding_compute import compute_and_save_embeddings_test2
 from scripts.set_new_embeddings import update_embeddings_in_db
 from scripts.query_search import perform_vector_search
 from scripts.compute_metrics import print_metrics
@@ -14,12 +14,12 @@ CONFIG = {
     "AUTH": ("", ""),
     
     # File Paths
-    "INPUT_LINKS": "output/inference_test2/pairs_ozono_ranked_2.csv",
-    "SEARCH_RESULTS": "test/test_outputs/ozono/test2_results_ozono.csv",
+    "INPUT_LINKS": "output/inference_test2/pairs_lavoro_ranked_2.csv",
+    "SEARCH_RESULTS": "test/test_outputs/lavoro/test2_results_lavoro.csv",
     # Experiment Parameters
     "LINKS_TO_INSERT": 1000, # Number of new links to insert for the experiment
-    "QUERY": "Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
-    "YEAR_FILTER": 1993,
+    "QUERY": "Normativa per l\'occupazione, il lavoro e i contratti di lavoro.",
+    "YEAR_FILTER": 2012,
 }
 
 def run_new_embeddings_pipeline():
@@ -32,7 +32,7 @@ def run_new_embeddings_pipeline():
     )
     
     print("\nSTEP 2: Computing Embeddings")
-    updated_nodes, new_embeddings = compute_and_save_embeddings(
+    updated_nodes, new_embeddings = compute_and_save_embeddings_test2(
         input_edges_path=CONFIG["INPUT_LINKS"],
         n_inserted_links=CONFIG["LINKS_TO_INSERT"],
         driver_uri=CONFIG["URI"],

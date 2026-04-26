@@ -1,4 +1,5 @@
 import pandas as pd
+import torch
 import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
@@ -60,7 +61,7 @@ def average_pool(last_hidden_states: Tensor,
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
-def compute_and_save_embeddings(input_edges_path, n_inserted_links, driver_uri, auth):
+def compute_and_save_embeddings_test2(input_edges_path, n_inserted_links, driver_uri, auth):
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
     input_edges = input_edges_path
@@ -72,9 +73,83 @@ def compute_and_save_embeddings(input_edges_path, n_inserted_links, driver_uri, 
     nodes_1 = set(inserted_links['node_1'].tolist())
     nodes_2 = set(inserted_links['node_2'].tolist())
 
-    node_ids = list(nodes_1.union(nodes_2))
+    node_ids = sorted(nodes_1.union(nodes_2))
 
-    # Re-compute embeddings for the new nodes (both node_1 and node_2)
+    # Re-compute embeddings for all nodes involved in the new links (both node_1 and node_2)
+    df = driver.execute_query("""
+    MATCH (a:LawUnit)<-[r1]-(l:NationalLaw)
+    WHERE a.id in $node_ids
+    AND (type(r1) = "HAS_ATTACHMENT" OR type(r1) = "HAS_ARTICLE")
+    OPTIONAL MATCH (a)-[r2]->(a2:LawUnit)
+    WHERE (type(r2) = 'ABROGATES' OR type(r2) = 'AMENDS' OR type(r2) = "INTRODUCES" or type(r2) = "CITES" or type(r2) = "RELATED")
+    WITH a, l, COLLECT(a2.allTopics) AS a2Topics
+    OPTIONAL MATCH (a)<-[r3:RELATED]-(a3:LawUnit)
+    WITH a, l, a2Topics + COLLECT(a3.allTopics) AS CitTopics
+    RETURN l.title as LawTitle, 
+        a.id AS ID, 
+        a.title AS Title, a.allTopics AS ArtTopics,
+        REDUCE(concatenated = "", topic IN l.mainTopic | concatenated + CASE concatenated WHEN "" THEN "" ELSE ", " END + topic) AS TopicLaw,
+        REDUCE(concatenated = "", topic IN CitTopics | concatenated + CASE concatenated WHEN "" THEN "" ELSE ", " END + topic) AS CitTopics
+    """, node_ids=node_ids)
+
+    df = pd.DataFrame(df[0], columns=df[-1]).fillna('')
+
+
+    if len(df) > 0:
+        df['text'] = df.apply(create_doc_article, axis = 1)
+
+        # Persist generated texts for inspection/debugging
+        # df['text'].to_csv("debug/new_pesticidi_text.txt", index=False, header=False)
+        
+        input_texts = df.text.to_list()
+
+        tokenizer = AutoTokenizer.from_pretrained('intfloat/multilingual-e5-large-instruct')
+        model = AutoModel.from_pretrained('intfloat/multilingual-e5-large-instruct').cuda()
+        model.eval()
+
+        new_embeddings = {}
+
+        with torch.no_grad():
+            for j in range(len(input_texts)):
+                ##### Tokenize the input texts
+                batch_dict = tokenizer(input_texts[j], max_length=512, padding=True, truncation=True, return_tensors='pt')
+
+                # debug
+                used_text = tokenizer.decode(batch_dict['input_ids'][0], skip_special_tokens=True)
+                # print(f"Used text in iter {j}: {used_text}\n\n")
+
+                batch_dict = {key: tensor.cuda() for key, tensor in batch_dict.items()}
+                outputs = model(**batch_dict)
+                embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+                
+                ##### Normalize embeddings
+                # embeddings = F.normalize(embeddings, p=2, dim=1)
+
+                id = df.loc[j,'ID']
+                embedding = embeddings.tolist()[0]
+                        
+                new_embeddings[id] = embedding
+
+        # Save new embeddings to a file
+        # np.save(output_npy_path, new_embeddings)
+
+        return node_ids, new_embeddings
+    
+def compute_and_save_embeddings_test1(input_edges_path, n_inserted_links, driver_uri, auth):
+    driver = GraphDatabase.driver(driver_uri, auth=auth)
+
+    input_edges = input_edges_path
+
+    df = pd.read_csv(input_edges)
+
+    inserted_links = df[:n_inserted_links]
+
+    nodes_1 = set(inserted_links['node_1'].tolist())
+    nodes_2 = set(inserted_links['node_2'].tolist())
+
+    node_ids = sorted(nodes_1.union(nodes_2))
+
+    # Re-compute embeddings ONLY for the articles of the relevant Law (node_1)
     df = driver.execute_query("""
     MATCH (a:LawUnit)<-[r1]-(l:NationalLaw)
     WHERE a.id in $node_ids
@@ -103,33 +178,36 @@ def compute_and_save_embeddings(input_edges_path, n_inserted_links, driver_uri, 
 
         tokenizer = AutoTokenizer.from_pretrained('intfloat/multilingual-e5-large-instruct')
         model = AutoModel.from_pretrained('intfloat/multilingual-e5-large-instruct').cuda()
+        model.eval()
 
         new_embeddings = {}
-        
-        for j in range(len(input_texts)):
-            ##### Tokenize the input texts
-            batch_dict = tokenizer(input_texts[j], max_length=512, padding=True, truncation=True, return_tensors='pt')
 
-            # debug
-            used_text = tokenizer.decode(batch_dict['input_ids'][0], skip_special_tokens=True)
-            print(f"Used text in iter {j}: {used_text}\n\n")
+        with torch.no_grad():
+            for j in range(len(input_texts)):
+                ##### Tokenize the input texts
+                batch_dict = tokenizer(input_texts[j], max_length=512, padding=True, truncation=True, return_tensors='pt')
 
-            batch_dict = {key: tensor.cuda() for key, tensor in batch_dict.items()}
-            outputs = model(**batch_dict)
-            embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
-            
-            ##### Normalize embeddings
-            # embeddings = F.normalize(embeddings, p=2, dim=1)
+                # debug
+                used_text = tokenizer.decode(batch_dict['input_ids'][0], skip_special_tokens=True)
+                # print(f"Used text in iter {j}: {used_text}\n\n")
 
-            id = df.loc[j,'ID']
-            embedding = embeddings.tolist()[0]
-                    
-            new_embeddings[id] = embedding
+                batch_dict = {key: tensor.cuda() for key, tensor in batch_dict.items()}
+                outputs = model(**batch_dict)
+                embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+                
+                ##### Normalize embeddings
+                # embeddings = F.normalize(embeddings, p=2, dim=1)
+
+                id = df.loc[j,'ID']
+                embedding = embeddings.tolist()[0]
+                        
+                new_embeddings[id] = embedding
 
         # Save new embeddings to a file
         # np.save(output_npy_path, new_embeddings)
 
         return node_ids, new_embeddings
+
 
 
 def debug_old_embedding(input_edges_path, driver_uri, auth):
@@ -149,8 +227,9 @@ def debug_old_embedding(input_edges_path, driver_uri, auth):
     AND (type(r1) = "HAS_ATTACHMENT" OR type(r1) = "HAS_ARTICLE")
     OPTIONAL MATCH (a)-[r2]->(a2:LawUnit)
     WHERE (type(r2) = 'ABROGATES' OR type(r2) = 'AMENDS' OR type(r2) = "INTRODUCES" or type(r2) = "CITES")
-    WITH a, l, a2.allTopics AS CitTopics
-    WITH a, l, COLLECT(CitTopics) AS CitTopics
+    WITH a, l, COLLECT(a2.allTopics) AS a2Topics
+    OPTIONAL MATCH (a)<-[r3:RELATED]-(a3:LawUnit)
+    WITH a, l, a2Topics + COLLECT(a3.allTopics) AS CitTopics
     RETURN l.title as LawTitle, 
         a.id AS ID, 
         a.title AS Title, a.allTopics AS ArtTopics,

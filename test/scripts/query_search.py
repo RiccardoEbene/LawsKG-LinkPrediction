@@ -24,6 +24,7 @@ def compute_embedding(input_text, model_name='intfloat/multilingual-e5-large-ins
     """
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModel.from_pretrained(model_name, device_map="auto")
+    model.eval()
 
     all_embeddings = []
 

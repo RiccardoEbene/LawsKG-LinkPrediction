@@ -112,9 +112,14 @@ def build_inference_dataset_from_law(
     # combine to get inference pairs
     inference_pairs_df = build_inference_set(df1, df2)
 
+    print("Inference dataset built, deleting invalid couples...")
+    inference_pairs_df = has_existing_connection(inference_pairs_df)
+
     # filter out couples including unknown nodes
     inference_pairs_df = delete_invalid_couples(inference_pairs_df, nodes_df)
 
+    # shuffle
+    inference_pairs_df = inference_pairs_df.sample(frac=1).reset_index(drop=True)
     inference_pairs_df.to_csv(output_csv, index=False)
 
     print(len(inference_pairs_df), "inference pairs generated.")
@@ -188,10 +193,10 @@ def build_inference_dataset_from_topk(
 
 if __name__ == "__main__":
     URI = "bolt://localhost:23034"
-    YEAR = 2005
-    # LAW = "2008|145"
-    OLD_CLOSEST = f"test/test_outputs/combustibili/old_results_combustibili.csv"
+    YEAR = 1993
+    LAW = "1993|549"
+    # OLD_CLOSEST = f"test/test_outputs/combustibili/old_results_combustibili.csv"
     NODES_CSV = f"data/all_nodes.csv"
-    OUTPUT_CSV = f"data/inference_test2/inference_pairs_combustibili_2.csv"
+    OUTPUT_CSV = f"data/inference_test1/inference_pairs_ozono.csv"
 
-    build_inference_dataset_from_topk(URI, YEAR, OLD_CLOSEST, OUTPUT_CSV, NODES_CSV, k=100)
+    build_inference_dataset_from_law(URI, YEAR, LAW, OUTPUT_CSV, NODES_CSV)

@@ -32,8 +32,6 @@ def prepare_evaluation_prompt(topic, article_id, driver_uri, auth):
 
         Article Text:
         {article_text}
-
-        Determine whether the article is relevant to the topic.
         """
     return prompt.strip()
 
