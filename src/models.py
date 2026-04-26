@@ -82,9 +82,10 @@ class NodeMLP(nn.Module):
             nn.init.xavier_uniform_(self.node_emb.weight)
             self.node_emb.weight.requires_grad = False
         
-        self.linear1 = nn.Linear(in_feats, h_feats)
+        # The hidden dimension is doubled to match GraphSAGE capacity
+        self.linear1 = nn.Linear(in_feats, h_feats*2)
         self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(h_feats, h_feats)
+        self.linear2 = nn.Linear(h_feats*2, h_feats)
 
     def forward(self, g):
             # --- Recupero Feature ---
