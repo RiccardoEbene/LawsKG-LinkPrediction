@@ -28,14 +28,17 @@ def call_llm_judge(user_prompt, deployment_name):
             {
                 "role": "system",
                 "content": (
-                    "Sei un esperto giurista ed analista di testi legislativi italiani. "
-                    "Il tuo compito è valutare se l'articolo proposto è attinente al topic indicato. "
-                    "Contesto importante: l'articolo è stato selezionato tramite collegamenti impliciti "
-                    "(nascosti) basati su affinità semantica o logica. "
-                    "\n\nCriteri di valutazione:\n"
-                    "- Rispondi 'Sì' non solo per corrispondenze letterali, ma anche se l'articolo "
-                    "riguarda principi correlati, ambiti affini o fornisce contesto utile al topic.\n"
-                    "- Rispondi ESCLUSIVAMENTE con la parola 'Sì' o 'No'."
+                    "Sei un assistente alla ricerca legale esperto in analisi dei testi legislativi italiani. "
+                    "Il tuo compito è valutare se l'articolo proposto può essere di interesse o utilità "
+                    "per una ricerca sul topic indicato.\n\n"
+                    "Contesto: L'articolo è stato identificato tramite connessioni logiche non esplicite (affinità semantica).\n\n"
+                    "Criteri di inclusione (Sii inclusivo):\n"
+                    "- Rispondi 'Sì' non solo per pertinenza diretta, ma anche per pertinenza indiretta, analogica o strumentale.\n"
+                    "- Includi l'articolo se fornisce basi procedurali, definizioni trasversali o se riguarda settori che impattano, "
+                    "anche non prioritariamente, il topic.\n"
+                    "- Considera l'utilità in un'ottica di 'quadro generale': se l'articolo aiuta a capire meglio "
+                    "il contesto del topic, è da considerarsi attinente.\n\n"
+                    "Rispondi ESCLUSIVAMENTE con la parola 'Sì' o 'No'."
                 ),
             },
             {
@@ -48,6 +51,7 @@ def call_llm_judge(user_prompt, deployment_name):
         model=deployment_name
     )
 
+    # Restituisce la risposta normalizzata (Sì/No)
     return response.choices[0].message.content.strip()
 
 def run_evaluation(
@@ -75,7 +79,7 @@ def run_evaluation(
 
             try:
                 # Build the article-specific prompt before sending it to the judge model.
-                prompt = prepare_evaluation_prompt(topic, article_id, driver_uri, auth)
+                prompt = prepare_evaluation_prompt(topic, article_id, driver_uri, auth, llm_judge=True)
                 result = call_llm_judge(prompt, deployment_name)
                 writer.writerow([rank, article_id, result])
                 output_handle.flush()
@@ -111,7 +115,7 @@ def run_evaluation(
 #         for article_id, _ in couples:
 #             try:
 #                 # Build prompt for the LLM
-#                 prompt = prepare_evaluation_prompt(topic, article_id, driver_uri, auth)
+#                 prompt = prepare_evaluation_prompt(topic, article_id, driver_uri, auth, llm_judge=True)
 
 #                 # Evaluate the prompt with the LLM
 #                 result = call_llm_judge(prompt, deployment_name)
@@ -133,8 +137,8 @@ def run_evaluation(
 
 if __name__ == "__main__":
     run_evaluation(
-        input_file="output/llm_judge/removed_articles_ozono.csv",
-        output_file="output/llm_judge/removed_llm_judge_ozono.txt",
-        topic="Normativa, informazioni e obblighi per chi produce, utilizza, detiene le sostanze ozono lesive",
+        input_file="output/llm_judge/added_articles_lavoro.csv",
+        output_file="output/llm_judge/added_llm_judge_lavoro_2.txt",
+        topic="Normativa per l\'occupazione, il lavoro e i contratti di lavoro.",
         k=10,
     )

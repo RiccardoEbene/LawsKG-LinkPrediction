@@ -40,6 +40,26 @@ def compute_f1(scores, labels, threshold=0.5):
     best_thresh = thresholds[best_idx]
     
     return best_f1, best_thresh
+
+def compute_ranking_metrics(ground_truth_csv, ranked_csv, k=50):
+    ground_truth_df = pd.read_csv(ground_truth_csv)
+    ranked_df = pd.read_csv(ranked_csv)
+
+    ground_truth_pairs = list(zip(ground_truth_df["originid"].astype(str), ground_truth_df["destID"].astype(str)))
+    ranked_pairs = list(zip(ranked_df["node_1"].astype(str), ranked_df["node_2"].astype(str)))
+    topk_pairs = set(ranked_pairs[:k])
+    ranks = {pair: idx + 1 for idx, pair in enumerate(ranked_pairs)}
+
+    hits_at_k = sum(1 for pair in ground_truth_pairs if pair in topk_pairs)
+    recall_at_k = hits_at_k / len(ground_truth_pairs)
+    mrr = sum((1 / ranks[pair]) if pair in ranks else 0.0 for pair in ground_truth_pairs) / len(ground_truth_pairs)
+
+    return {
+        "hits_at_k": hits_at_k,
+        "topk_percentage": recall_at_k,
+        "recall_at_k": recall_at_k,
+        "mrr": mrr,
+    }
     
 def save_checkpoint(model, optimizer, config, node_map, filepath):
     torch.save({
@@ -82,3 +102,23 @@ def delete_invalid_couples(edges_df, nodes_df):
     print(f"Dropped {len(edges_df) - len(valid_edges_df)} edges connecting to unknown nodes.")
 
     return valid_edges_df.reset_index(drop=True)
+
+
+def create_added_removed_sets(old_csv, new_csv, added_out_path, removed_out_path, k=50):
+    # Load and slice the top k rows
+    df1 = pd.read_csv(old_csv).head(k)
+    df2 = pd.read_csv(new_csv).head(k)
+
+    # Filter rows in second not in first (Added)
+    added = df2[~df2['node_id'].isin(df1['node_id'])]
+    
+    # Filter rows in first not in second (Removed)
+    removed = df1[~df1['node_id'].isin(df2['node_id'])]
+
+    # Save to outputs
+    added.to_csv(added_out_path, index=False)
+    removed.to_csv(removed_out_path, index=False)
+
+
+if __name__ == "__main__":
+    print(compute_ranking_metrics("data/citEUNat.csv", "output/EUNat_ranked.csv", k=10000))

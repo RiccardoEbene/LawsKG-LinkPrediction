@@ -8,10 +8,6 @@ from test.scripts.set_new_embeddings import update_embeddings_in_db
 
 BOLT_URL = os.getenv("BOLT_MEMGRAPH", "bolt://localhost:23034")
 
-
-
-
-
 def update_parquet_with_db_embeddings(parquet_file: str, emb_file: str):
     '''
     Update input parquet file with embedding from npy embedding file
@@ -118,8 +114,50 @@ def get_num_articles(numpy_file: str) -> int:
     emb_dict = np.load(numpy_file, allow_pickle=True).item()
     return len(emb_dict)
 
+def export_law_units_to_parquet(uri: str, parquet_path: str = "all_nodes_emb.parquet"):
+    """Retrieves all LawUnit nodes connected to EULaw nodes from Memgraph
+    and appends them to an existing parquet file.
+    """
+    # 1. Define the Cypher query to get the LawUnit nodes
+    query = """
+    MATCH (e:EULaw)-[:HAS_ARTICLE|HAS_ATTACHMENT]->(l:LawUnit)
+    WHERE l.embedding IS NOT NULL
+    RETURN DISTINCT l.id AS node_id, l.embedding AS embedding
+    """
+
+    new_nodes_data = []
+
+    # 2. Connect to Memgraph using the Bolt driver and retrieve data
+    driver = GraphDatabase.driver(uri, auth=("", ""))
+
+    with driver.session() as session:
+        result = session.run(query)
+        for record in result:
+            node_id = record["node_id"]
+            embedding = record["embedding"]
+            
+            # Keep track of the full embedding for the parquet file
+            new_nodes_data.append({"node_id": node_id, "embedding": embedding})
+
+    driver.close()
+
+    # 3. Read existing data, append new data, and save it back
+    existing_df = pd.read_parquet(parquet_path)
+    new_df = pd.DataFrame(new_nodes_data)
+    
+    # Combine both dataframes
+    updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+    
+    # Overwrite the file with the appended dataset
+    updated_df.to_parquet(parquet_path, index=False)
+
 if __name__ == "__main__":
-    df_1 = pd.read_parquet("data/train_nodes.parquet")
-    print(len(df_1))
+    df_1 = pd.read_parquet("data/all_nodes_emb.parquet")
+    all_nodes = set(df_1["node_id"])
+    df_2 = pd.read_csv("data/citEUNat_filtered.csv")
+    nodes = set(df_2["originid"]).union(set(df_2["destID"]))
+    missing_nodes = nodes - all_nodes
+    print(f"number of missing nodes: {len(missing_nodes)}")
+
 
 

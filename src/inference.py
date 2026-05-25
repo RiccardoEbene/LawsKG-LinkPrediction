@@ -8,7 +8,7 @@ from src.models import GraphSAGE, DotPredictor
 from src.dataset import load_base_graph
 from src.utils import get_device
 
-MAX_LENGTH = 500000
+MAX_LENGTH = 1100000 # 500000
 
 def inference(args):
     """
@@ -69,7 +69,7 @@ def inference(args):
         g, 
         torch.arange(num_nodes), # We want embeddings for ALL nodes
         sampler,
-        batch_size=2048, # (1024 - 4096 usually safe)
+        batch_size=16,
         shuffle=False,
         drop_last=False,
         num_workers=4
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nodes_path', type=str, default='data/all_nodes_emb.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
-    parser.add_argument('--input_csv', type=str, default='data/inference_test2/inference_pairs_lavoro_2.csv')
-    parser.add_argument('--output_csv', type=str, default='output/inference_test2/pairs_lavoro_ranked_2.csv')
+    parser.add_argument('--input_csv', type=str, default='data/EUNat_pairs.csv')
+    parser.add_argument('--output_csv', type=str, default='output/EUNat_ranked.csv')
     parser.add_argument('--model_path', type=str, default='checkpoints/tuned_graphsage_full.pth')
     # parser.add_argument('--map_path', type=str, default='output/node_map.pkl')
     

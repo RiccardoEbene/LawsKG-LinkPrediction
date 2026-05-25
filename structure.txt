@@ -1,5 +1,6 @@
 .
 ├── checkpoints
+│   ├── ablation_model.pth
 │   ├── graphsage_batch.pth
 │   ├── graphsage_full.pth
 │   ├── model_emb_tuned_all_nodes.pth
@@ -9,18 +10,26 @@
 ├── data
 │   ├── all_nodes.csv
 │   ├── all_nodes_emb.parquet
+│   ├── connected_nodes.csv
 │   ├── edges.csv
-│   ├── inference_pairs_combustibili.csv
-│   ├── inference_pairs_combustibili_train.csv
-│   ├── inference_pairs_lavoro.csv
-│   ├── inference_pairs_lavoro_train.csv
-│   ├── inference_pairs_ozono.csv
-│   ├── inference_pairs_ozono_train.csv
-│   ├── inference_pairs_sostanze.csv
-│   ├── inference_pairs_sostanze_train.csv
+│   ├── inference_test1
+│   │   ├── inference_pairs_combustibili.csv
+│   │   ├── inference_pairs_combustibili_train.csv
+│   │   ├── inference_pairs_lavoro.csv
+│   │   ├── inference_pairs_lavoro_train.csv
+│   │   ├── inference_pairs_ozono.csv
+│   │   ├── inference_pairs_ozono_train.csv
+│   │   ├── inference_pairs_sostanze.csv
+│   │   └── inference_pairs_sostanze_train.csv
+│   ├── inference_test2
+│   │   ├── inference_pairs_combustibili_2.csv
+│   │   ├── inference_pairs_lavoro_2.csv
+│   │   ├── inference_pairs_ozono_2.csv
+│   │   └── inference_pairs_sostanze_2.csv
 │   ├── in_notes_set_labeled_3.csv
 │   ├── in_notes_set_labeled.csv
 │   ├── in_notes_set_labeled.csv.bak
+│   ├── lawunit_connected_to_eulaw.csv
 │   ├── missing_lawunit_ids.txt
 │   ├── random_negatives_samples.csv
 │   ├── sim_greater_95_couples.csv
@@ -157,33 +166,53 @@
 │   │       └── events.out.tfevents.1774118611.genex.131952.9
 │   ├── model_1_run
 │   │   ├── events.out.tfevents.1774116328.genex.82669.0
-│   │   └── events.out.tfevents.1774117099.genex.97584.0
+│   │   ├── events.out.tfevents.1774117099.genex.97584.0
+│   │   ├── events.out.tfevents.1776525111.genex.1455622.0
+│   │   └── events.out.tfevents.1776526038.genex.1475199.0
 │   └── tuning_run
 │       ├── events.out.tfevents.1769360698.genex.3864780.0
 │       └── events.out.tfevents.1769361313.genex.3875562.0
 ├── main.py
 ├── output
-│   ├── new_llm_judge_output_combustibili.txt
-│   ├── pairs_combustibili_ranked_batch.csv
-│   ├── pairs_combustibili_ranked_full.csv
-│   ├── pairs_combustibili_ranked_full_train.csv
-│   ├── pairs_lavoro_ranked_batch.csv
-│   ├── pairs_lavoro_ranked_batch_train.csv
-│   ├── pairs_lavoro_ranked_full.csv
-│   ├── pairs_lavoro_ranked_full_train.csv
-│   ├── pairs_ozono_ranked_batch.csv
-│   ├── pairs_ozono_ranked_full.csv
-│   ├── pairs_ozono_ranked_full_train.csv
-│   ├── pairs_sostanze_ranked_batch.csv
-│   ├── pairs_sostanze_ranked_full.csv
-│   ├── pairs_sostanze_ranked_full_train.csv
+│   ├── inference_test1
+│   │   ├── pairs_combustibili_ranked_batch.csv
+│   │   ├── pairs_combustibili_ranked.csv
+│   │   ├── pairs_combustibili_ranked_full.csv
+│   │   ├── pairs_combustibili_ranked_full_train.csv
+│   │   ├── pairs_lavoro_ranked_batch.csv
+│   │   ├── pairs_lavoro_ranked_batch_train.csv
+│   │   ├── pairs_lavoro_ranked.csv
+│   │   ├── pairs_lavoro_ranked_full.csv
+│   │   ├── pairs_lavoro_ranked_full_train.csv
+│   │   ├── pairs_ozono_ranked_batch.csv
+│   │   ├── pairs_ozono_ranked.csv
+│   │   ├── pairs_ozono_ranked_full.csv
+│   │   ├── pairs_ozono_ranked_full_train.csv
+│   │   ├── pairs_sostanze_ranked_batch.csv
+│   │   ├── pairs_sostanze_ranked.csv
+│   │   ├── pairs_sostanze_ranked_full.csv
+│   │   └── pairs_sostanze_ranked_full_train.csv
+│   ├── inference_test2
+│   │   ├── pairs_combustibili_ranked_2.csv
+│   │   ├── pairs_lavoro_ranked_2.csv
+│   │   ├── pairs_ozono_ranked_2.csv
+│   │   └── pairs_sostanze_ranked_2.csv
+│   ├── llm_judge
+│   │   ├── added_articles_lavoro.csv
+│   │   ├── added_articles_ozono.csv
+│   │   ├── added_articles_ozono_del.csv
+│   │   ├── added_llm_judge_lavoro.txt
+│   │   ├── added_llm_judge_ozono_2.txt
+│   │   ├── added_llm_judge_ozono.txt
+│   │   ├── removed_articles_lavoro.csv
+│   │   ├── removed_articles_ozono.csv
+│   │   ├── removed_articles_ozono_del.csv
+│   │   ├── removed_llm_judge_lavoro.txt
+│   │   ├── removed_llm_judge_ozono_2.txt
+│   │   └── removed_llm_judge_ozono.txt
 │   ├── predictions_emb_tuned.csv
 │   ├── prova_inference_out.csv
 │   └── sim_lower_0.95_predictions.csv
-├── __pycache__
-│   ├── main.cpython-313.pyc
-│   ├── memgraph_util.cpython-311.pyc
-│   └── memgraph_util.cpython-313.pyc
 ├── pykeen
 │   ├── data
 │   │   ├── testingtriples_in_notes.csv
@@ -209,7 +238,6 @@
 │       ├── inference.py
 │       └── train.py
 ├── requirements.txt
-├── save_old_emb.py
 ├── src
 │   ├── batch_training.py
 │   ├── build_inference_dataset.py
@@ -219,82 +247,71 @@
 │   ├── inference.py
 │   ├── __init__.py
 │   ├── models.py
+│   ├── __pycache__
+│   │   ├── build_inference_dataset.cpython-311.pyc
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── training.cpython-311.pyc
+│   │   └── utils.cpython-311.pyc
 │   ├── training.py
 │   ├── tuning.py
 │   └── utils.py
 ├── structure.txt
-├── test
-│   ├── __init__.py
-│   ├── llm_test.py
-│   ├── scripts
-│   │   ├── clean_up.py
-│   │   ├── compute_metrics.py
-│   │   ├── embedding_compute.py
-│   │   ├── __init__.py
-│   │   ├── insert_new_links.py
-│   │   ├── query_search.py
-│   │   └── set_new_embeddings.py
-│   ├── test_outputs
-│   │   ├── combustibili
-│   │   │   ├── batch_embeddings_dict_2017_51.npy
-│   │   │   ├── batch_llm_judge_output_combustibili.txt
-│   │   │   ├── batch_results_combustibili.csv
-│   │   │   ├── empty_embeddings_dict_2017_51.npy
-│   │   │   ├── empty_results_combustibili.csv
-│   │   │   ├── new_embeddings_dict_2017_51.npy
-│   │   │   ├── new_embeddings_dict_2017_51_train.npy
-│   │   │   ├── new_llm_judge_output_combustibili.txt
-│   │   │   ├── new_results_combustibili.csv
-│   │   │   ├── new_results_combustibili_train.csv
-│   │   │   ├── old_embeddings_2017_51.npy
-│   │   │   ├── old_embeddings_dict_2017_51.npy
-│   │   │   ├── old_results_combustibili.csv
-│   │   │   ├── wrong_embeddings_dict_2017_51.npy
-│   │   │   └── wrong_results_combustibili.csv
-│   │   ├── memgraph_util.py
-│   │   ├── nucleare
-│   │   │   ├── empty_embeddings_dict_2010_31.npy
-│   │   │   ├── empty_results_nucleare.csv
-│   │   │   ├── new_embeddings_dict_2010_31.npy
-│   │   │   ├── new_results_nucleare.csv
-│   │   │   ├── old_embeddings_dict_2010_31.npy
-│   │   │   ├── old_results_nucleare.csv
-│   │   │   ├── wrong_embeddings_dict_2010_31.npy
-│   │   │   └── wrong_results_nucleare.csv
-│   │   ├── ozono
-│   │   │   ├── batch_embeddings_dict_1993_549.npy
-│   │   │   ├── batch_results_ozono.csv
-│   │   │   ├── empty_embeddings_dict_1993_549.npy
-│   │   │   ├── empty_results_ozono.csv
-│   │   │   ├── new_embeddings_dict_1993_549.npy
-│   │   │   ├── new_embeddings_dict_1993_549_train.npy
-│   │   │   ├── new_results_ozono.csv
-│   │   │   ├── new_results_ozono_train.csv
-│   │   │   ├── old_embeddings_1993_549.npy
-│   │   │   ├── old_embeddings_dict_1993_549.npy
-│   │   │   ├── old_results_ozono.csv
-│   │   │   ├── wrong_embeddings_dict_1993_549.npy
-│   │   │   └── wrong_results_ozono.csv
-│   │   ├── pesticidi
-│   │   │   ├── new_embeddings_dict_2012_150.npy
-│   │   │   ├── new_results_pesticidi.csv
-│   │   │   ├── old_embeddings_dict_2012_150.npy
-│   │   │   └── old_results_pesticidi.csv
-│   │   └── sostanze
-│   │       ├── batch_embeddings_dict_2008_145.npy
-│   │       ├── batch_results_sostanze.csv
-│   │       ├── empty_embeddings_dict_2008_145.npy
-│   │       ├── empty_results_sostanze.csv
-│   │       ├── new_embeddings_dict_2008_145.npy
-│   │       ├── new_embeddings_dict_2008_145_train.npy
-│   │       ├── new_results_sostanze.csv
-│   │       ├── new_results_sostanze_train.csv
-│   │       ├── old_embeddings_2008_145.npy
-│   │       ├── old_results_sostanze.csv
-│   │       ├── wrong_embeddings_dict_2008_145.npy
-│   │       └── wrong_results_sostanze.csv
-│   ├── test_pipeline.py
-│   └── test_utils.py
-└── workspace.py
+└── test
+    ├── __init__.py
+    ├── llm_test.py
+    ├── __pycache__
+    │   └── test_utils.cpython-311.pyc
+    ├── scripts
+    │   ├── clean_up.py
+    │   ├── compute_metrics.py
+    │   ├── embedding_compute.py
+    │   ├── __init__.py
+    │   ├── insert_new_links.py
+    │   ├── __pycache__
+    │   │   ├── clean_up.cpython-311.pyc
+    │   │   └── __init__.cpython-311.pyc
+    │   ├── query_search.py
+    │   └── set_new_embeddings.py
+    ├── test2_pipeline.py
+    ├── test_outputs
+    │   ├── combustibili
+    │   │   ├── batch_llm_judge_output_combustibili.txt
+    │   │   ├── batch_results_combustibili.csv
+    │   │   ├── empty_embeddings_dict_2017_51.npy
+    │   │   ├── empty_results_combustibili.csv
+    │   │   ├── new_results_combustibili.csv
+    │   │   ├── new_results_combustibili_train.csv
+    │   │   ├── old_llm_judge_combustibili.txt
+    │   │   ├── old_results_combustibili.csv
+    │   │   ├── test2_llm_judge_combustibili.txt
+    │   │   ├── test2_results_combustibili.csv
+    │   │   └── wrong_results_combustibili.csv
+    │   ├── lavoro
+    │   │   ├── new_results_lavoro.csv
+    │   │   ├── old_results_lavoro.csv
+    │   │   └── test2_results_lavoro.csv
+    │   ├── memgraph_util.py
+    │   ├── ozono
+    │   │   ├── batch_results_ozono.csv
+    │   │   ├── empty_embeddings_dict_1993_549.npy
+    │   │   ├── empty_results_ozono.csv
+    │   │   ├── new_results_ozono.csv
+    │   │   ├── new_results_ozono_train.csv
+    │   │   ├── old_llm_judge_ozono.txt
+    │   │   ├── old_results_ozono.csv
+    │   │   ├── test2_llm_judge_ozono.txt
+    │   │   ├── test2_results_ozono.csv
+    │   │   └── wrong_results_ozono.csv
+    │   └── sostanze
+    │       ├── batch_results_sostanze.csv
+    │       ├── empty_embeddings_dict_2008_145.npy
+    │       ├── empty_results_sostanze.csv
+    │       ├── new_results_sostanze.csv
+    │       ├── new_results_sostanze_train.csv
+    │       ├── old_results_sostanze.csv
+    │       ├── test2_results_sostanze.csv
+    │       └── wrong_results_sostanze.csv
+    ├── test_pipeline.py
+    └── test_utils.py
 
-82 directories, 215 files
+88 directories, 226 files

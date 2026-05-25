@@ -15,7 +15,7 @@ def fetch_article_data(tx, article_id):
     record = result.single()
     return record.data() if record else None
 
-def prepare_evaluation_prompt(topic, article_id, driver_uri, auth):
+def prepare_evaluation_prompt(topic, article_id, driver_uri, auth, llm_judge=True):
     """Fetches article text from Memgraph and formats the user prompt string."""
     driver = GraphDatabase.driver(driver_uri, auth=auth)
 
@@ -27,12 +27,19 @@ def prepare_evaluation_prompt(topic, article_id, driver_uri, auth):
 
     article_text = str(article_data.get('text', ''))
 
-    prompt = f"""
-        Topic: {topic}
+    if llm_judge:
+        prompt = f"""
+            Topic: {topic}
 
-        Article Text:
-        {article_text}
-        """
+            Article Text:
+            {article_text}
+            """
+    else:
+        prompt = f"""
+            Article Text:
+            {article_text}
+            """
+
     return prompt.strip()
 
 # def sample_couples(input_file, num_couples, threshold):
