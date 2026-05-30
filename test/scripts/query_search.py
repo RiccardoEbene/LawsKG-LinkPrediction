@@ -53,12 +53,13 @@ def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth, u
 
     # Perform vector search
     result, _, _ = driver.execute_query("""
-            WITH 500 as k
+            WITH 5000 as k
             CALL vector_search.search($index, k, $embedding) 
             YIELD node, similarity
             MATCH (l:Law)-[:HAS_ARTICLE]->(node)
             WHERE l.publicationDate > localDateTime({year:$year, month:1, day:1}) 
             RETURN node.id AS id, node.title as title, similarity
+            LIMIT 500
             """, index=index, embedding=embedding, year=year)
 
     # Save data to csv
@@ -81,8 +82,8 @@ def perform_vector_search(query_text, year, output_csv_path, driver_uri, auth, u
 
 if __name__ == "__main__":
     perform_vector_search(
-        query_text="Normativa sui combustibili ad uso trazione, uso civile, industriale e marittimo.",
-        year=2005,
+        query_text="Normativa riguardante i poteri speciali di Golden Power.",
+        year=2010,
         output_csv_path="test/test_outputs/combustibili/prova_old_results_combustibili.csv",
         use_old_embeddings=True,
         driver_uri="bolt://localhost:23034",
