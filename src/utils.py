@@ -45,7 +45,7 @@ def compute_ranking_metrics(ground_truth_csv, ranked_csv, k=50):
     ground_truth_df = pd.read_csv(ground_truth_csv)
     ranked_df = pd.read_csv(ranked_csv)
 
-    ground_truth_pairs = list(zip(ground_truth_df["originid"].astype(str), ground_truth_df["destID"].astype(str)))
+    ground_truth_pairs = list(zip(ground_truth_df["node_1"].astype(str), ground_truth_df["node_2"].astype(str)))
     ranked_pairs = list(zip(ranked_df["node_1"].astype(str), ranked_df["node_2"].astype(str)))
     topk_pairs = set(ranked_pairs[:k])
     ranks = {pair: idx + 1 for idx, pair in enumerate(ranked_pairs)}

@@ -8,7 +8,7 @@ from src.models import GraphSAGE, DotPredictor
 from src.dataset import load_base_graph
 from src.utils import get_device
 
-MAX_LENGTH = 1100000 # 500000
+MAX_LENGTH = 500000
 
 def inference(args):
     """
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nodes_path', type=str, default='data/all_nodes_emb.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
-    parser.add_argument('--input_csv', type=str, default='data/EUNat_pairs.csv')
-    parser.add_argument('--output_csv', type=str, default='output/EUNat_ranked.csv')
+    parser.add_argument('--input_csv', type=str, default='data/inference_test1/inference_pairs_sostanze.csv')
+    parser.add_argument('--output_csv', type=str, default='output/inference_test1/pairs_sostanze_ranked')
     parser.add_argument('--model_path', type=str, default='checkpoints/tuned_graphsage_full.pth')
     # parser.add_argument('--map_path', type=str, default='output/node_map.pkl')
     
