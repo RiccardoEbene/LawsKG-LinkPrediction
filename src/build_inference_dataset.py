@@ -185,7 +185,7 @@ def get_most_cited_laws(law_ids: list, k: int, uri: str = "bolt://localhost:2303
     records = [r for r in records if (r["articles"]+r["attachments"]) <= 100]
 
     # Sort the list of dictionaries by citations descending and slice top k
-    records.sort(key=lambda x: x["citations"], reverse=True)
+    records.sort(key=lambda x: x["citations"], reverse=False) # Ora sono le meno citate
     return [r["law_id"] for r in records[:k]]
 
 def build_inference_datasets_from_k_laws(
@@ -193,11 +193,12 @@ def build_inference_datasets_from_k_laws(
     uri: str = "bolt://localhost:23034",
     base_output_csv: str = "data/inference_test3",
     k: int = 3,
+    most_cited: bool = True
 ):
     """ Build inference dataset for each topic, selecting top k ground truth laws by citations and combining their articles with all articles after reference year """
     
     # Get ground-truth dataset
-    years, texts, laws, topics = get_law_data()
+    years, texts, laws, topics, _, _ = get_law_data(most_cited=most_cited)
 
     for i, topic in enumerate(topics):
         output_csv = f"{base_output_csv}/inference_pairs_{topic}.csv"
@@ -248,6 +249,6 @@ if __name__ == "__main__":
     build_inference_datasets_from_k_laws(
         nodes_csv=NODES_CSV,
         uri=URI,
-        base_output_csv="data/inference_test3",
+        base_output_csv="data/inference_test4",
         k=3
     )

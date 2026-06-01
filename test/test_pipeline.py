@@ -23,7 +23,7 @@ CONFIG = {
     "LINKS_TO_INSERT": 1000, # Number of new links to insert for the experiment
     "QUERY": "Normativa per il trattamento delle sostanze chimiche (regolamento REACH).",
     "YEAR_FILTER": 1997,
-    "LAW_ID_TARGET": "2008|145",
+    "LAW_ID_TARGET": ["2008|145"],
     "GT_TOTAL": 14, # Ground truth total articles
     "K_RECALL": 50
 }
@@ -64,7 +64,7 @@ def run_new_embeddings_pipeline():
     print("\nSTEP 5: Computing Metrics")
     print_metrics(
         results_csv=CONFIG["SEARCH_RESULTS"],
-        law_id=CONFIG["LAW_ID_TARGET"],
+        target_ids=CONFIG["LAW_ID_TARGET"],
         gt_count=CONFIG["GT_TOTAL"],
         k=CONFIG["K_RECALL"]
     )
@@ -93,7 +93,7 @@ def run_old_embeddings_pipeline():
     print("\nSTEP 2: Computing Metrics")
     print_metrics(
         results_csv=CONFIG["OLD_SEARCH_RESULTS"],
-        law_id=CONFIG["LAW_ID_TARGET"],
+        target_ids=CONFIG["LAW_ID_TARGET"],
         gt_count=CONFIG["GT_TOTAL"],
         k=CONFIG["K_RECALL"]
     )

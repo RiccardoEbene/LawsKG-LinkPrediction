@@ -7,6 +7,7 @@ from torch.nn.functional import sigmoid
 from src.models import GraphSAGE, DotPredictor
 from src.dataset import load_base_graph
 from src.utils import get_device
+from lists_dataset import get_law_data
 
 MAX_LENGTH = 500000
 
@@ -69,7 +70,7 @@ def inference(args):
         g, 
         torch.arange(num_nodes), # We want embeddings for ALL nodes
         sampler,
-        batch_size=16,
+        batch_size=2048,
         shuffle=False,
         drop_last=False,
         num_workers=4
@@ -125,14 +126,34 @@ def inference(args):
     print(test_edges_df.head())
 
 
+def run_inference_for_topics(args):
+    """Run inference once per topic using topic-specific CSV paths."""
+
+    _, _, _, topics, _, _ = get_law_data()
+
+    # remove "nucleare" topics
+    topics = [topic for topic in topics if topic != "nucleare"]
+
+    for topic in topics:
+        topic_args = argparse.Namespace(**vars(args))
+        topic_args.input_csv = args.input_csv.replace("{topic}", topic)
+        topic_args.output_csv = args.output_csv.replace("{topic}", topic)
+
+        print(f"\nRunning inference for topic '{topic}'")
+        print(f"Input CSV: {topic_args.input_csv}")
+        print(f"Output CSV: {topic_args.output_csv}")
+
+        inference(topic_args)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--nodes_path', type=str, default='data/all_nodes_emb.parquet')
     parser.add_argument('--edges_path', type=str, default='data/edges.csv')
-    parser.add_argument('--input_csv', type=str, default='data/inference_test1/inference_pairs_sostanze.csv')
-    parser.add_argument('--output_csv', type=str, default='output/inference_test1/pairs_sostanze_ranked')
+    parser.add_argument('--input_csv', type=str, default='data/inference_test4/inference_pairs_{topic}.csv')
+    parser.add_argument('--output_csv', type=str, default='output/inference_test4/pairs_{topic}_ranked.csv')
     parser.add_argument('--model_path', type=str, default='checkpoints/tuned_graphsage_full.pth')
     # parser.add_argument('--map_path', type=str, default='output/node_map.pkl')
     
     args = parser.parse_args()
-    inference(args)
+    run_inference_for_topics(args)

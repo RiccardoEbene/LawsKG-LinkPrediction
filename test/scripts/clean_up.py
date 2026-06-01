@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from neo4j import GraphDatabase
-from scripts.set_new_embeddings import update_embeddings_in_db
+from test.scripts.set_new_embeddings import update_embeddings_in_db
 
 def clean_up(updated_nodes: list, driver_uri: str, auth: tuple):
     """Deletes the newly inserted links and restores old embeddings."""

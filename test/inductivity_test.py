@@ -30,6 +30,15 @@ from scipy.stats import ks_2samp
 
 
 def run_test(gt_path, all_pairs_path, k=10):
+    """ Executes the inductivity test by running multiple trials (bootstrapping), performing inference, and applying the KS test to compare score distributions. 
+    Args:
+        gt_path (str): Path to the ground-truth CSV file containing real edges.
+        all_pairs_path (str): Path to the CSV file containing all possible node pairs.
+        k (int, optional): Number of negative samples per positive sample. Defaults to 10.
+    Returns:
+        dict: A dictionary containing the mean and median KS statistic and mean median p-value across all trials.
+    """
+
     num_trials = 5
 
     # Carica il ground-truth una sola volta all'inizio
@@ -94,15 +103,19 @@ def run_test(gt_path, all_pairs_path, k=10):
 
     if ks_statistics:
         mean_d = np.mean(ks_statistics)
+        median_d = np.median(ks_statistics)
         mean_p = np.mean(p_values)
+        median_p = np.median(p_values)
 
         print("\n" + "=" * 40)
         print("FINAL INDUCTIVITY TEST RESULTS (AVERAGE):")
         print(f"Mean KS Statistic (D): {mean_d:.4f}")
+        print(f"Median KS Statistic (D): {median_d:.4f}")
         print(f"Mean p-value: {mean_p:.4e}")
+        print(f"Median p-value: {median_p:.4e}")
         print("=" * 40)
 
-        return {"mean_d": mean_d, "mean_p-value": mean_p}
+        return {"mean_d": mean_d, "median_d": median_d, "mean_p-value": mean_p, "median_p-value": median_p}
     else:
         print("No successful trials to aggregate.")
         return None
@@ -142,4 +155,17 @@ def plot_score_distribution(df_path, gt_path, output_path="score_distribution.pn
     plt.show()
 
 if __name__ == "__main__":
-    plot_score_distribution(df_path="output/inductivity_test/", gt_path="data/inductivity_test/citEUNat.csv", output_path="score_distribution.png")
+    metrics = run_test(
+        gt_path="data/inductivity_test/citEUNat.csv",
+        all_pairs_path="data/inductivity_test/EUNat_pairs.csv",
+        k=10
+    )
+
+    # save metrics to file
+    if metrics:
+        with open("output/inductivity_test/metrics_summary.txt", "w") as f:
+            f.write("Inductivity Test Metrics Summary\n")
+            f.write("=" * 40 + "\n")
+            for key, value in metrics.items():
+                f.write(f"{key}: {value:.4f}\n")
+    # plot_score_distribution(df_path="output/inductivity_test/", gt_path="data/inductivity_test/citEUNat.csv", output_path="score_distribution.png")

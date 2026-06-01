@@ -147,7 +147,8 @@ def compute_and_save_embeddings_test1(input_edges_path, n_inserted_links, driver
     nodes_1 = set(inserted_links['node_1'].tolist())
     nodes_2 = set(inserted_links['node_2'].tolist())
 
-    node_ids = sorted(nodes_1.union(nodes_2))
+    # node_ids = sorted(nodes_1.union(nodes_2))
+    node_ids = sorted(nodes_1)
 
     # Re-compute embeddings ONLY for the articles of the relevant Law (node_1)
     df = driver.execute_query("""
